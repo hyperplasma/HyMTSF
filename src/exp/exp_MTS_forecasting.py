@@ -42,12 +42,12 @@ class exp_MTS_forecasting(Exp_Basic):
             criterion = nn.MSELoss()
         return criterion
 
-    def vali(self, vali_data, vali_loader, criterion):
+    def validate(self, valid_data, valid_loader, criterion, desc="Validation"):
         total_loss = []
         train_mae = []
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(tqdm(vali_loader, desc="Validation")):
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(tqdm(valid_loader, desc=desc)):
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
 
@@ -88,14 +88,11 @@ class exp_MTS_forecasting(Exp_Basic):
 
     def train(self, setting):
         train_data, train_loader = self._get_data(flag='train')
-        vali_data, vali_loader = self._get_data(flag='val')
-        test_data, test_loader = self._get_data(flag='test')
+        valid_data, valid_loader = self._get_data(flag='val')
 
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
             os.makedirs(path)
-
-        time_now = time.time()
 
         train_steps = len(train_loader)
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True, delta=1e-16)
@@ -125,7 +122,7 @@ class exp_MTS_forecasting(Exp_Basic):
                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
 
-                # encoder - decoder
+                # encoder-decoder
                 if self.args.use_amp:
                     with torch.cuda.amp.autocast():
                         if self.args.output_attention:
@@ -166,17 +163,16 @@ class exp_MTS_forecasting(Exp_Basic):
                     loss.backward()
                     model_optim.step()
 
-            print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
+            print("Time cost: {:.4f}s".format(time.time() - epoch_time))
             train_loss = np.average(train_loss)
-            vali_loss, vali_mse = self.vali(vali_data, vali_loader, criterion)
-            test_loss, test_mse = self.vali(test_data, test_loader, criterion)
+            valid_loss, valid_mse = self.validate(valid_data, valid_loader, criterion, desc="Validation")
 
-            print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f} Vali MSE: {5:.7f} Test MSE: {6:.7f}".format(
-                epoch + 1, train_steps, train_loss, vali_loss, test_loss, vali_mse, test_mse))
+            print("Epoch: {0} Steps: {1} | Train Loss: {2:.7f} Valid Loss: {3:.7f} Valid MSE: {4:.7f}\n".format(
+                epoch + 1, train_steps, train_loss, valid_loss, valid_mse))
 
-            early_stopping(vali_loss, self.model, path)
+            early_stopping(valid_loss, self.model, path)
             if early_stopping.early_stop:
-                print(f"Early stopping on validation score {early_stopping.best_score}")
+                print(f"Early stopping on validation score {early_stopping.best_score}!")
                 break
 
             adjust_learning_rate(model_optim, epoch + 1, self.args)
@@ -189,7 +185,7 @@ class exp_MTS_forecasting(Exp_Basic):
     def test(self, setting, test=0):
         test_data, test_loader = self._get_data(flag='test')
         if test:
-            print('loading model')
+            print('Loading model...')
             self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
 
         preds = []
@@ -242,10 +238,10 @@ class exp_MTS_forecasting(Exp_Basic):
 
         preds = np.array(preds)
         trues = np.array(trues)
-        print('test shape:', preds.shape, trues.shape)
+        print('Test shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
-        print('test shape:', preds.shape, trues.shape)
+        print('Test shape:', preds.shape, trues.shape)
 
         # result save
         folder_path = './results/' + setting + '/'
@@ -255,15 +251,13 @@ class exp_MTS_forecasting(Exp_Basic):
         target_mae = MAE(preds[:,-1,-1], trues[:,-1,-1])
         target_mse = MSE(preds[:,-1,-1], trues[:,-1,-1])
         target_smape = SMAPE(preds[:,-1,-1], trues[:,-1,-1])
-        print("target mae:{}".format(target_mae))
-        print("target mse:{}".format(target_mse))
-        print("target smape:{}".format(target_smape))
+        print("Target MAE:{}".format(target_mae))
+        print("Target MSE:{}".format(target_mse))
+        print("Target sMAPE:{}".format(target_smape))
 
         f = open("result.txt", 'a')
-        f.write(setting + "  \n")
-        f.write('mae:{}, smape:{}'.format(target_mae, target_smape))
-        f.write('\n')
-        f.write('\n')
+        f.write(setting + " \n")
+        f.write('MAE:{}, MSE:{}, sMAPE:{}\n'.format(target_mae, target_mse, target_smape))
         f.close()
 
         np.save(folder_path + 'pred.npy', preds)

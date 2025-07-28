@@ -11,14 +11,12 @@
 # on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
-
 from typing import List
 
 import numpy as np
 import pandas as pd
 from pandas.tseries import offsets
 from pandas.tseries.frequencies import to_offset
-
 
 class TimeFeature:
     def __init__(self):

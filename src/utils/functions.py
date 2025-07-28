@@ -1,6 +1,5 @@
 import torch
 
-
 def grid_sample1D(tensor, grid):
     """Given an input and a flow-field grid, computes the output using input
     values and pixel locations from grid.

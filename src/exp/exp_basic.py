@@ -25,7 +25,7 @@ class Exp_Basic(object):
             os.environ["CUDA_VISIBLE_DEVICES"] = str(
                 self.args.gpu) if not self.args.use_multi_gpu else self.args.devices
             device = torch.device('cuda:{}'.format(self.args.gpu))
-            print('Use GPU: cuda:{}'.format(self.args.gpu))
+            print('Use GPU cuda:{}'.format(self.args.gpu))
         else:
             device = torch.device('cpu')
             print('Use CPU')
@@ -34,7 +34,7 @@ class Exp_Basic(object):
     def _get_data(self):
         pass
 
-    def vali(self):
+    def validate(self):
         pass
 
     def train(self):
