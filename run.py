@@ -1,11 +1,10 @@
 import argparse
-
-# import os
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 import torch
 from src.exp.exp_MTS_forecasting import exp_MTS_forecasting
 from src.utils.tools import seed_everything
+
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 torch.set_num_threads(4)
 

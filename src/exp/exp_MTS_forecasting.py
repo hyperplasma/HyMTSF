@@ -13,6 +13,9 @@ import numpy as np
 warnings.filterwarnings('ignore')
 
 class exp_MTS_forecasting(Exp_Basic):
+    """
+        Multivariate Time-Series Forecasting Experiment
+    """
     def __init__(self, args):
         super(exp_MTS_forecasting, self).__init__(args)
 

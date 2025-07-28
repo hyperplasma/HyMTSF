@@ -3,12 +3,10 @@ import os
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-import pandas as pd
 import math
 import random
 
 plt.switch_backend('agg')
-
 
 def adjust_learning_rate(optimizer, epoch, args):
     if args.lradj == 'type1':
