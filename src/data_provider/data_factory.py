@@ -1,4 +1,4 @@
-from data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom
+from src.data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom
 from torch.utils.data import DataLoader
 
 data_dict = {
@@ -8,7 +8,6 @@ data_dict = {
     'ETTm2': Dataset_ETT_minute,
     'custom': Dataset_Custom,
 }
-
 
 def data_provider(args, flag):
     Data = data_dict[args.data]

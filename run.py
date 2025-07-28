@@ -111,10 +111,10 @@ if __name__ == '__main__':
                 args.learning_rate,
                 args.des, ii)
 
-            print('Start training: {}'.format(setting))
+            print('\nStart training: {}'.format(setting))
             exp.train(setting)
 
-            print('Testing: {}'.format(setting))
+            print('\nTesting: {}'.format(setting))
             exp.test(setting)
             torch.cuda.empty_cache()
     else:
@@ -136,6 +136,6 @@ if __name__ == '__main__':
             args.des, ii)
 
         exp = Exp(args)  # set experiments
-        print('Testing: {}'.format(setting))
+        print('\nTesting: {}'.format(setting))
         exp.test(setting, test=1)
         torch.cuda.empty_cache()

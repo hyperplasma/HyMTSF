@@ -22,7 +22,6 @@ def corr_with(trends, keys):
     sorted_correlation = correlation_score.sort_values(ascending=True)
     return corr_filtered, sorted_correlation
 
-
 class Dataset_ETT_hour(Dataset):
     def __init__(self, root_path, flag='train', size=None,
                  features='S', data_path='ETTh1.csv',
@@ -115,7 +114,6 @@ class Dataset_ETT_hour(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
-
 
 class Dataset_ETT_minute(Dataset):
     def __init__(self, root_path, flag='train', size=None,
